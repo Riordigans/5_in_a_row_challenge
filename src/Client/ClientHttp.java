@@ -1,0 +1,147 @@
+package Client;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+/*
+Class ClientHttp
+This class implements the game client that communicates with the server
+*/
+public class ClientHttp {
+
+    String token;
+    private String hostAddr = "127.0.0.1";
+    private String uriString = "http://" + hostAddr;
+    private Scanner userInput = new Scanner(System.in);
+    private Socket keepAlive;
+    private InputStream keepAliveIS;
+    private int keepAlivePort = 8080;
+
+    private static final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
+
+    public static void main(String[] args) {
+        try {
+            ClientHttp obj = new ClientHttp();
+
+            System.out.println("Welcome to 5-in-a-row! Enter the Server Address (or press Enter for localhost):");
+            String usrServAdd = obj.userInput.nextLine();
+            if (!usrServAdd.equals("")) {
+                obj.hostAddr = usrServAdd;
+                obj.uriString = "http://" + obj.hostAddr;
+            }
+
+            obj.token = obj.joinGame();
+            if (obj.token.equals("noPlay"))
+                return;
+            System.out.println("Please enter your name:");
+            String name = obj.userInput.nextLine();
+            obj.nameToServer(name);
+            while (obj.playGame())
+                ;
+            System.out.println("Game ended, terminating client.");
+            obj.keepAlive.close();
+        } catch (Exception e) {
+            System.out.println("Error communicating with the server. Ensure address is entered correctly.");
+        }
+    }
+
+    String joinGame() throws IOException, InterruptedException {
+
+        HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create(uriString + "/startGame")).build();
+
+        keepAlive = new Socket(hostAddr, keepAlivePort);
+        keepAliveIS = keepAlive.getInputStream();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // print response body
+        System.out.println(response.body());
+
+        return response.headers().allValues("Token").get(0);
+    }
+
+    void nameToServer(String name) throws IOException, InterruptedException {
+
+        HttpRequest request = HttpRequest.newBuilder().PUT(ofFormString(name)).uri(URI.create(uriString + "/setName"))
+                .header("Token", token).build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // print response body
+        System.out.println(response.body());
+    }
+
+    boolean playGame() throws IOException, InterruptedException {
+
+        boolean yourTurn = false;
+        while (!yourTurn) {
+
+            HttpRequest getRequest = HttpRequest.newBuilder().GET().uri(URI.create(uriString + "/playGame"))
+                    .header("Token", token).build();
+
+            HttpResponse<String> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+
+            keepAliveIS.read();
+
+            if (!getResponse.headers().allValues("EndGame").contains("false")) {
+                System.out.println(getResponse.body());
+                return false;
+            }
+
+            if (getResponse.headers().allValues("Turn").contains("false")) {
+                // wait 500 ms before checking for your turn again
+                Thread.sleep(500);
+            } else {
+                // print response body
+                System.out.println(getResponse.body());
+                yourTurn = true;
+            }
+        }
+
+        int move = 0;
+        boolean validInt = false;
+        while (!validInt) {
+            try {
+                move = userInput.nextInt();
+                if (move >= 1 && move <= 9) {
+                    validInt = true;
+                } else {
+                    System.out.println("That's not a valid move, try again!");
+                }
+            } catch (InputMismatchException e) {
+                userInput.nextLine();
+                System.out.println("That's not an integer, try again!");
+            }
+        }
+
+        HttpRequest putRequest = HttpRequest.newBuilder().PUT(ofFormInt(move)).uri(URI.create(uriString + "/playGame"))
+                .header("Token", token).build();
+
+        HttpResponse<String> putResponse = httpClient.send(putRequest, HttpResponse.BodyHandlers.ofString());
+
+        keepAliveIS.read();
+
+        // print response body
+        System.out.println(putResponse.body());
+        if (!putResponse.headers().allValues("EndGame").contains("false")) {
+            return false;
+        }
+        return true;
+    }
+
+    HttpRequest.BodyPublisher ofFormString(String str) {
+        return HttpRequest.BodyPublishers.ofString(str);
+    }
+
+    HttpRequest.BodyPublisher ofFormInt(int num) {
+        String numString = "" + num;
+        return HttpRequest.BodyPublishers.ofString(numString);
+    }
+}
