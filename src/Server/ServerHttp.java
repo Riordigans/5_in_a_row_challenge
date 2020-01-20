@@ -113,6 +113,7 @@ public class ServerHttp {
         }
     }
 
+    //Reset players and game board
     void newGame() {
         playerState = new PlayerState();
         game = new Game();
