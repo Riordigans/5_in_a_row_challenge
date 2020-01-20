@@ -1,7 +1,5 @@
 package Server;
 
-import Server.Game;
-import Server.InvalidMoveException;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -110,7 +108,6 @@ public class GameTest {
     @Test
     public void testBoardFull() throws InvalidMoveException {
         Game game = new Game();
-
         assertFalse(game.boardFull());
 
         for (int i = 1; i <= 9; i++) {
@@ -118,7 +115,6 @@ public class GameTest {
                 game.newMove(1, i);
             }
         }
-
         assertTrue(game.boardFull());
     }
 }

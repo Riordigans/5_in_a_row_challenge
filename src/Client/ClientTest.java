@@ -1,12 +1,10 @@
 package Client;
 
-import Server.ServerHttp;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.Test;
-
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -19,10 +17,8 @@ import java.util.Map;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-
 public class ClientTest extends Thread {
 
-    ClientHttp client;
     HttpServer server;
     static Socket clientSocket;
     static ServerSocket serverSocket;
@@ -115,7 +111,6 @@ public class ClientTest extends Thread {
         assertTrue(response.contains("GET\r\nPUT"));
         //Assert that playGame returns true after a move is made and game is not over
         assertTrue(res);
-
 
         server.stop(0);
         serverSocket.close();

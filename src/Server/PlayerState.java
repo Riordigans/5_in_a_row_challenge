@@ -3,6 +3,8 @@ package Server;
 import java.util.ArrayList;
 import java.util.List;
 
+//Class to keep track of the active players. Server uses this class to add players, set their names,
+//check for valid tokens and for seeing who the current valid player is.
 public class PlayerState {
     private List <Player> playerList = new ArrayList<Player>();
     private int currentPlayer = 0;

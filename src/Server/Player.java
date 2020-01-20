@@ -1,5 +1,6 @@
 package Server;
 
+//Player class to keep track of their name, token and number.
 public class Player{
 
     private int playerNum;

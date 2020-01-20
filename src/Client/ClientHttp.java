@@ -26,6 +26,8 @@ public class ClientHttp {
 
     private static final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
 
+    //Creates new HTTP client, user can join localhost or a specific address to play remotely.
+    //Calls functions as described in the rest of this class
     public static void main(String[] args) {
         try {
             ClientHttp obj = new ClientHttp();
@@ -52,6 +54,8 @@ public class ClientHttp {
         }
     }
 
+    //Join game is initial request to the server. Checks for players present already and returns a success
+    //if there is room for the current client to join the game.
     String joinGame() throws IOException, InterruptedException {
 
         HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create(uriString + "/startGame")).build();
@@ -67,6 +71,8 @@ public class ClientHttp {
         return response.headers().allValues("Token").get(0);
     }
 
+    //If the client joins successfully, the server will allow them to enter their name. This name is stored in
+    //the Player object.
     void nameToServer(String name) throws IOException, InterruptedException {
 
         HttpRequest request = HttpRequest.newBuilder().PUT(ofFormString(name)).uri(URI.create(uriString + "/setName"))
@@ -78,6 +84,8 @@ public class ClientHttp {
         System.out.println(response.body());
     }
 
+    //Main game method. Player one is allowed to do the initial PUT request of a move to the server, and waits
+    //500 milliseconds to try to GET the latest game state.
     boolean playGame() throws IOException, InterruptedException {
 
         boolean yourTurn = false;
@@ -105,6 +113,7 @@ public class ClientHttp {
             }
         }
 
+        //Input validation for valid move
         int move = 0;
         boolean validInt = false;
         while (!validInt) {

@@ -1,5 +1,6 @@
 package Server;
 
+//Custom-built exception to be thrown if a player inputs an invalid move
 public class InvalidMoveException extends Exception {
 
     private static final long serialVersionUID = 7718828512143293558L;

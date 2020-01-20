@@ -26,6 +26,7 @@ public class ServerHttp {
     private final int keepAlivePort = 8080;
     private HttpServer server;
 
+    //Need a keepalive port to check if players disconnect
     public ServerHttp() {
         try {
             keepAlive = new ServerSocket(keepAlivePort);
@@ -35,6 +36,7 @@ public class ServerHttp {
         }
     }
 
+    //Set up the three server APIs
     public static void main(final String[] args) {
         ServerHttp serverHttp = new ServerHttp();
         serverHttp.server.createContext("/startGame", new GameStartHandler(serverHttp));
@@ -125,6 +127,7 @@ public class ServerHttp {
 
         System.out.println("Player attempting to join game...");
 
+        //Allow up to two players to join the game
         if (numPlayers < 2 && !exFlag) {
             // Use socket to check if player disconnects
             try {
@@ -138,6 +141,8 @@ public class ServerHttp {
                 exFlag = true;
             }
 
+            //Allow each player to join the game, and set a token to keep track of the requests
+            //coming from each player.
             if (!exFlag) {
                 numPlayers++;
                 response = "You are Player " + numPlayers + ".";
@@ -181,6 +186,8 @@ public class ServerHttp {
         return response;
     }
 
+    //Main method to handle moves being PUT from the client and the client requesting GETs for the
+    //current game state
     String playGame(Headers responseHeaders, String reqToken, String requestMethod, String body) {
         String response = "";
 
@@ -211,7 +218,6 @@ public class ServerHttp {
                 // Once both players have been notified that the game is over, restart
                 newGame();
             } else {
-
                 // Check for disconnect by writing to sockets
                 for (Socket s : clientSocket) {
                     try {
@@ -227,8 +233,8 @@ public class ServerHttp {
                     }
                 }
 
+                //Handle GET as part of regular game flow
                 if (reqToken.equals(playerToken)) {
-
                     if (requestMethod.equals("GET") && !exFlag) {
                         response = playGET(responseHeaders);
                     } else if (requestMethod.equals("PUT") && !exFlag) {
@@ -243,6 +249,8 @@ public class ServerHttp {
         return response;
     }
 
+    //GET returns the game state if it is the current player's go. Prints out the game board
+    //and offers them to make a move
     String playGET(Headers responseHeaders) {
         String response = "";
         Player current = playerState.currentPlayer();
@@ -255,6 +263,8 @@ public class ServerHttp {
         return response;
     }
 
+    //PUT allows the current player to make a move. They include a column number in the PUT
+    //that the piece will get played in.
     String playPUT(String reqToken, String body, Headers responseHeaders) {
         String response = "";
         boolean exFlag = false;
@@ -279,6 +289,7 @@ public class ServerHttp {
             }
         }
 
+        //Check for victory condition, if the game is still live
         if (game.checkVictory(playerNum) && !exFlag) {
             responseHeaders.put("EndGame", Arrays.asList("true"));
             response = "Congratulations " + name + ", you have won!";
@@ -308,5 +319,4 @@ public class ServerHttp {
         keepAlive.close();
         server.stop(0);
     }
-
 }

@@ -39,9 +39,7 @@ public class ServerTest extends Thread {
         assertTrue(returned.contains("There are already 2 players in the game"));
         try {
             server.close();
-        } catch (Exception e) {
-        }
-        ;
+        } catch (Exception e) { }
     }
 
     @Test
@@ -52,12 +50,10 @@ public class ServerTest extends Thread {
 
         //Testing with invalid token
         String returned = server.getName("testName", "p1");
-
         assertTrue(returned.contains("The token supplied by the client is invalid."));
 
         //Testing only one player in game with valid token
         returned = server.getName("testName", "player1");
-
         assertTrue(returned.contains("Hello testName") && returned.contains("Waiting for Player 2"));
 
         //Testing two players in game with valid tokens
@@ -69,9 +65,7 @@ public class ServerTest extends Thread {
         assertTrue(returned.contains("Hello testName") && returned.contains("All players connected."));
         try {
             server.close();
-        } catch (Exception e) {
-        }
-        ;
+        } catch (Exception e) { }
     }
 
     @Test
@@ -135,9 +129,7 @@ public class ServerTest extends Thread {
 
         try {
             server.close();
-        } catch (Exception e) {
-        }
-        ;
+        } catch (Exception e) { }
     }
 
     @Test
@@ -168,9 +160,7 @@ public class ServerTest extends Thread {
 
         try {
             server.close();
-        } catch (Exception e) {
-        }
-        ;
+        } catch (Exception e) { }
     }
 
     Thread socketThread = new Thread() {
